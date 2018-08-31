@@ -15,6 +15,11 @@ declare module 'react-native-contacts' {
       email: string;
   }
 
+  export interface UrlAddress {
+      label: string;
+      url: string;
+  }
+
   export interface PhoneNumber {
       label: string;
       number: string;
@@ -55,5 +60,6 @@ declare module 'react-native-contacts' {
       suffix: string;
       department: string;
       birthday: Birthday;
+      urlAddresses: UrlAddress[];
   }
 }

@@ -63,7 +63,8 @@ RCT_EXPORT_METHOD(getContactsMatchingString:(NSString *)string callback:(RCTResp
                       CNContactOrganizationNameKey,
                       CNContactJobTitleKey,
                       CNContactImageDataAvailableKey,
-                      CNContactBirthdayKey
+                      CNContactBirthdayKey,
+					  CNContactUrlAddressesKey
                       ];
     NSArray *arrayOfContacts = [store unifiedContactsMatchingPredicate:[CNContact predicateForContactsMatchingName:searchString]
                                                            keysToFetch:keys
@@ -116,7 +117,8 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
                                        CNContactOrganizationNameKey,
                                        CNContactJobTitleKey,
                                        CNContactImageDataAvailableKey,
-                                       CNContactBirthdayKey
+                                       CNContactBirthdayKey,
+									   CNContactUrlAddressesKey
                                        ]];
 
     if(withThumbnails) {
@@ -222,6 +224,29 @@ RCT_EXPORT_METHOD(getAllWithoutPhotos:(RCTResponseSenderBlock) callback)
 
     [output setObject: emailAddreses forKey:@"emailAddresses"];
     //end emails
+	
+	//handle urls
+	NSMutableArray *urls = [[NSMutableArray alloc] init];
+	
+	for (CNLabeledValue<NSString*>* labeledValue in person.urlAddresses) {
+		NSMutableDictionary* url = [NSMutableDictionary dictionary];
+		NSString* label = [CNLabeledValue localizedStringForLabel:[labeledValue label]];
+		NSString* value = [labeledValue value];
+		
+		if(value) {
+			if(!label) {
+				label = [CNLabeledValue localizedStringForLabel:@"other"];
+			}
+			[url setObject: value forKey:@"url"];
+			[url setObject: label forKey:@"label"];
+			[urls addObject:url];
+		} else {
+			NSLog(@"ignoring blank email");
+		}
+	}
+	
+	[output setObject: urls forKey:@"urlAddresses"];
+	//end urls
 
     //handle postal addresses
     NSMutableArray *postalAddresses = [[NSMutableArray alloc] init];
@@ -425,7 +450,8 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
                              CNContactImageDataAvailableKey,
                              CNContactThumbnailImageDataKey,
                              CNContactImageDataKey,
-                             CNContactBirthdayKey
+                             CNContactBirthdayKey,
+							 CNContactUrlAddressesKey
                              ];
 
     @try {
@@ -515,6 +541,19 @@ RCT_EXPORT_METHOD(updateContact:(NSDictionary *)contactData callback:(RCTRespons
     }
 
     contact.emailAddresses = emails;
+	
+	NSMutableArray *urls = [[NSMutableArray alloc]init];
+	
+	for (id urlData in [contactData valueForKey:@"urlAddresses"]) {
+		NSString *label = [urlData valueForKey:@"label"];
+		NSString *url = [urlData valueForKey:@"url"];
+		
+		if(label && url) {
+			[urls addObject:[[CNLabeledValue alloc] initWithLabel:label value:url]];
+		}
+	}
+	
+	contact.urlAddresses = urls;
 
     NSMutableArray *postalAddresses = [[NSMutableArray alloc]init];
 
