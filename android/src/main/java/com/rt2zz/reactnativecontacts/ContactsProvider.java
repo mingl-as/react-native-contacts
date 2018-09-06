@@ -25,55 +25,62 @@ import static android.provider.ContactsContract.CommonDataKinds.Organization;
 import static android.provider.ContactsContract.CommonDataKinds.Phone;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredName;
 import static android.provider.ContactsContract.CommonDataKinds.StructuredPostal;
+import static android.provider.ContactsContract.CommonDataKinds.Website;
 
 public class ContactsProvider {
     public static final int ID_FOR_PROFILE_CONTACT = -1;
 
-    private static final List<String> JUST_ME_PROJECTION = new ArrayList<String>() {{
-        add((ContactsContract.Data._ID));
-        add(ContactsContract.Data.CONTACT_ID);
-        add(ContactsContract.Data.RAW_CONTACT_ID);
-        add(ContactsContract.Data.LOOKUP_KEY);
-        add(ContactsContract.Contacts.Data.MIMETYPE);
-        add(ContactsContract.Profile.DISPLAY_NAME);
-        add(Contactables.PHOTO_URI);
-        add(StructuredName.DISPLAY_NAME);
-        add(StructuredName.GIVEN_NAME);
-        add(StructuredName.MIDDLE_NAME);
-        add(StructuredName.FAMILY_NAME);
-        add(StructuredName.PREFIX);
-        add(StructuredName.SUFFIX);
-        add(Phone.NUMBER);
-        add(Phone.TYPE);
-        add(Phone.LABEL);
-        add(Email.DATA);
-        add(Email.ADDRESS);
-        add(Email.TYPE);
-        add(Email.LABEL);
-        add(Organization.COMPANY);
-        add(Organization.TITLE);
-        add(Organization.DEPARTMENT);
-        add(StructuredPostal.FORMATTED_ADDRESS);
-        add(StructuredPostal.TYPE);
-        add(StructuredPostal.LABEL);
-        add(StructuredPostal.STREET);
-        add(StructuredPostal.POBOX);
-        add(StructuredPostal.NEIGHBORHOOD);
-        add(StructuredPostal.CITY);
-        add(StructuredPostal.REGION);
-        add(StructuredPostal.POSTCODE);
-        add(StructuredPostal.COUNTRY);
-        add(Event.START_DATE);
-        add(Event.TYPE);
-    }};
+    private static final List<String> JUST_ME_PROJECTION = new ArrayList<String>() {
+        {
+            add((ContactsContract.Data._ID));
+            add(ContactsContract.Data.CONTACT_ID);
+            add(ContactsContract.Data.RAW_CONTACT_ID);
+            add(ContactsContract.Data.LOOKUP_KEY);
+            add(ContactsContract.Contacts.Data.MIMETYPE);
+            add(ContactsContract.Profile.DISPLAY_NAME);
+            add(Contactables.PHOTO_URI);
+            add(StructuredName.DISPLAY_NAME);
+            add(StructuredName.GIVEN_NAME);
+            add(StructuredName.MIDDLE_NAME);
+            add(StructuredName.FAMILY_NAME);
+            add(StructuredName.PREFIX);
+            add(StructuredName.SUFFIX);
+            add(Phone.NUMBER);
+            add(Phone.TYPE);
+            add(Phone.LABEL);
+            add(Email.DATA);
+            add(Email.ADDRESS);
+            add(Email.TYPE);
+            add(Email.LABEL);
+            add(Organization.COMPANY);
+            add(Organization.TITLE);
+            add(Organization.DEPARTMENT);
+            add(StructuredPostal.FORMATTED_ADDRESS);
+            add(StructuredPostal.TYPE);
+            add(StructuredPostal.LABEL);
+            add(StructuredPostal.STREET);
+            add(StructuredPostal.POBOX);
+            add(StructuredPostal.NEIGHBORHOOD);
+            add(StructuredPostal.CITY);
+            add(StructuredPostal.REGION);
+            add(StructuredPostal.POSTCODE);
+            add(StructuredPostal.COUNTRY);
+            add(Event.START_DATE);
+            add(Event.TYPE);
+        }
+    };
 
-    private static final List<String> FULL_PROJECTION = new ArrayList<String>() {{
-        addAll(JUST_ME_PROJECTION);
-    }};
+    private static final List<String> FULL_PROJECTION = new ArrayList<String>() {
+        {
+            addAll(JUST_ME_PROJECTION);
+        }
+    };
 
-    private static final List<String> PHOTO_PROJECTION = new ArrayList<String>() {{
-        add(Contactables.PHOTO_URI);
-    }};
+    private static final List<String> PHOTO_PROJECTION = new ArrayList<String>() {
+        {
+            add(Contactables.PHOTO_URI);
+        }
+    };
 
     private final ContentResolver contentResolver;
 
@@ -84,13 +91,10 @@ public class ContactsProvider {
     public WritableArray getContactsMatchingString(String searchString) {
         Map<String, Contact> matchingContacts;
         {
-            Cursor cursor = contentResolver.query(
-                    ContactsContract.Data.CONTENT_URI,
+            Cursor cursor = contentResolver.query(ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
                     ContactsContract.Contacts.DISPLAY_NAME_PRIMARY + " LIKE ?",
-                    new String[]{"%" + searchString + "%"},
-                    null
-            );
+                    new String[] { "%" + searchString + "%" }, null);
 
             try {
                 matchingContacts = loadContactsFrom(cursor);
@@ -108,16 +112,17 @@ public class ContactsProvider {
         return contacts;
     }
 
-     public WritableMap getContactByRawId(String contactRawId) {
+    public WritableMap getContactByRawId(String contactRawId) {
 
         // Get Contact Id from Raw Contact Id
-        String[] projections = new String[]{ContactsContract.RawContacts.CONTACT_ID};
+        String[] projections = new String[] { ContactsContract.RawContacts.CONTACT_ID };
         String select = ContactsContract.RawContacts._ID + "= ?";
-        String[] selectionArgs = new String[]{contactRawId};
-        Cursor rawCursor = contentResolver.query(ContactsContract.RawContacts.CONTENT_URI, projections, select, selectionArgs, null);
+        String[] selectionArgs = new String[] { contactRawId };
+        Cursor rawCursor = contentResolver.query(ContactsContract.RawContacts.CONTENT_URI, projections, select,
+                selectionArgs, null);
         String contactId = null;
         if (rawCursor.getCount() == 0) {
-            /*contact id not found */
+            /* contact id not found */
         }
 
         if (rawCursor.moveToNext()) {
@@ -132,7 +137,7 @@ public class ContactsProvider {
 
         rawCursor.close();
 
-        //Now that we have the real contact id, fetch information
+        // Now that we have the real contact id, fetch information
         return getContactById(contactId);
     }
 
@@ -140,13 +145,9 @@ public class ContactsProvider {
 
         Map<String, Contact> matchingContacts;
         {
-            Cursor cursor = contentResolver.query(
-                ContactsContract.Data.CONTENT_URI,
-                FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                ContactsContract.RawContacts.CONTACT_ID + " = ?",
-                new String[]{contactId},
-                null
-            );
+            Cursor cursor = contentResolver.query(ContactsContract.Data.CONTENT_URI,
+                    FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
+                    ContactsContract.RawContacts.CONTACT_ID + " = ?", new String[] { contactId }, null);
 
             try {
                 matchingContacts = loadContactsFrom(cursor);
@@ -156,24 +157,21 @@ public class ContactsProvider {
                 }
             }
         }
-        
-        if(matchingContacts.values().size() > 0) {
+
+        if (matchingContacts.values().size() > 0) {
             return matchingContacts.values().iterator().next().toMap();
         }
-        
-       return null;
+
+        return null;
     }
 
     public WritableArray getContacts() {
         Map<String, Contact> justMe;
         {
             Cursor cursor = contentResolver.query(
-                    Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI, ContactsContract.Contacts.Data.CONTENT_DIRECTORY),
-                    JUST_ME_PROJECTION.toArray(new String[JUST_ME_PROJECTION.size()]),
-                    null,
-                    null,
-                    null
-            );
+                    Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI,
+                            ContactsContract.Contacts.Data.CONTENT_DIRECTORY),
+                    JUST_ME_PROJECTION.toArray(new String[JUST_ME_PROJECTION.size()]), null, null, null);
 
             try {
                 justMe = loadContactsFrom(cursor);
@@ -186,13 +184,15 @@ public class ContactsProvider {
 
         Map<String, Contact> everyoneElse;
         {
-            Cursor cursor = contentResolver.query(
-                    ContactsContract.Data.CONTENT_URI,
+            Cursor cursor = contentResolver.query(ContactsContract.Data.CONTENT_URI,
                     FULL_PROJECTION.toArray(new String[FULL_PROJECTION.size()]),
-                    ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=?",
-                    new String[]{Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE, Organization.CONTENT_ITEM_TYPE, StructuredPostal.CONTENT_ITEM_TYPE, Event.CONTENT_ITEM_TYPE},
-                    null
-            );
+                    ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=? OR "
+                            + ContactsContract.Data.MIMETYPE + "=? OR " + ContactsContract.Data.MIMETYPE + "=?",
+                    new String[] { Email.CONTENT_ITEM_TYPE, Phone.CONTENT_ITEM_TYPE, StructuredName.CONTENT_ITEM_TYPE,
+                            Organization.CONTENT_ITEM_TYPE, StructuredPostal.CONTENT_ITEM_TYPE,
+                            Event.CONTENT_ITEM_TYPE },
+                    null);
 
             try {
                 everyoneElse = loadContactsFrom(cursor);
@@ -230,22 +230,22 @@ public class ContactsProvider {
             if (columnIndexContactId != -1) {
                 contactId = cursor.getString(columnIndexContactId);
             } else {
-                //todo - double check this, it may not be necessary any more
-                contactId = String.valueOf(ID_FOR_PROFILE_CONTACT);//no contact id for 'ME' user
+                // todo - double check this, it may not be necessary any more
+                contactId = String.valueOf(ID_FOR_PROFILE_CONTACT);// no contact id for 'ME' user
             }
 
             if (columnIndexId != -1) {
                 id = cursor.getString(columnIndexId);
             } else {
-                //todo - double check this, it may not be necessary any more
-                id = String.valueOf(ID_FOR_PROFILE_CONTACT);//no contact id for 'ME' user
+                // todo - double check this, it may not be necessary any more
+                id = String.valueOf(ID_FOR_PROFILE_CONTACT);// no contact id for 'ME' user
             }
 
             if (columnIndexRawContactId != -1) {
                 rawContactId = cursor.getString(columnIndexRawContactId);
             } else {
-                //todo - double check this, it may not be necessary any more
-                rawContactId = String.valueOf(ID_FOR_PROFILE_CONTACT);//no contact id for 'ME' user
+                // todo - double check this, it may not be necessary any more
+                rawContactId = String.valueOf(ID_FOR_PROFILE_CONTACT);// no contact id for 'ME' user
             }
 
             if (!map.containsKey(contactId)) {
@@ -280,17 +280,17 @@ public class ContactsProvider {
                 if (!TextUtils.isEmpty(phoneNumber)) {
                     String label;
                     switch (type) {
-                        case Phone.TYPE_HOME:
-                            label = "home";
-                            break;
-                        case Phone.TYPE_WORK:
-                            label = "work";
-                            break;
-                        case Phone.TYPE_MOBILE:
-                            label = "mobile";
-                            break;
-                        default:
-                            label = "other";
+                    case Phone.TYPE_HOME:
+                        label = "home";
+                        break;
+                    case Phone.TYPE_WORK:
+                        label = "work";
+                        break;
+                    case Phone.TYPE_MOBILE:
+                        label = "mobile";
+                        break;
+                    default:
+                        label = "other";
                     }
                     contact.phones.add(new Contact.Item(label, phoneNumber, id));
                 }
@@ -300,26 +300,53 @@ public class ContactsProvider {
                 if (!TextUtils.isEmpty(email)) {
                     String label;
                     switch (type) {
-                        case Email.TYPE_HOME:
-                            label = "home";
-                            break;
-                        case Email.TYPE_WORK:
-                            label = "work";
-                            break;
-                        case Email.TYPE_MOBILE:
-                            label = "mobile";
-                            break;
-                        case Email.TYPE_CUSTOM:
-                            if (cursor.getString(cursor.getColumnIndex(Email.LABEL)) != null) {
-                                label = cursor.getString(cursor.getColumnIndex(Email.LABEL)).toLowerCase();
-                            } else {
-                                label = "";
-                            }
-                            break;
-                        default:
-                            label = "other";
+                    case Email.TYPE_HOME:
+                        label = "home";
+                        break;
+                    case Email.TYPE_WORK:
+                        label = "work";
+                        break;
+                    case Email.TYPE_MOBILE:
+                        label = "mobile";
+                        break;
+                    case Email.TYPE_CUSTOM:
+                        if (cursor.getString(cursor.getColumnIndex(Email.LABEL)) != null) {
+                            label = cursor.getString(cursor.getColumnIndex(Email.LABEL)).toLowerCase();
+                        } else {
+                            label = "";
+                        }
+                        break;
+                    default:
+                        label = "other";
                     }
                     contact.emails.add(new Contact.Item(label, email, id));
+                }
+            } else if (mimeType.equals(Website.CONTENT_ITEM_TYPE)) {
+                String url = cursor.getString(cursor.getColumnIndex(Website.URL));
+                int type = cursor.getInt(cursor.getColumnIndex(Website.TYPE));
+                if (!TextUtils.isEmpty(url)) {
+                    String label;
+                    switch (type) {
+                    case Website.TYPE_HOME:
+                        label = "home";
+                        break;
+                    case Website.TYPE_WORK:
+                        label = "work";
+                        break;
+                    case Website.TYPE_PROFILE:
+                        label = "mobile";
+                        break;
+                    case Website.TYPE_CUSTOM:
+                        if (cursor.getString(cursor.getColumnIndex(Website.LABEL)) != null) {
+                            label = cursor.getString(cursor.getColumnIndex(Website.LABEL)).toLowerCase();
+                        } else {
+                            label = "";
+                        }
+                        break;
+                    default:
+                        label = "other";
+                    }
+                    contact.urls.add(new Contact.Item(label, url, id));
                 }
             } else if (mimeType.equals(Organization.CONTENT_ITEM_TYPE)) {
                 contact.company = cursor.getString(cursor.getColumnIndex(Organization.COMPANY));
@@ -364,13 +391,9 @@ public class ContactsProvider {
     }
 
     public String getPhotoUriFromContactId(String contactId) {
-        Cursor cursor = contentResolver.query(
-                ContactsContract.Data.CONTENT_URI,
+        Cursor cursor = contentResolver.query(ContactsContract.Data.CONTENT_URI,
                 PHOTO_PROJECTION.toArray(new String[PHOTO_PROJECTION.size()]),
-                ContactsContract.RawContacts.CONTACT_ID + " = ?",
-                new String[]{contactId},
-                null
-        );
+                ContactsContract.RawContacts.CONTACT_ID + " = ?", new String[] { contactId }, null);
         try {
             if (cursor != null && cursor.moveToNext()) {
                 String rawPhotoURI = cursor.getString(cursor.getColumnIndex(Contactables.PHOTO_URI));
@@ -404,7 +427,7 @@ public class ContactsProvider {
         private List<Item> phones = new ArrayList<>();
         private List<PostalAddressItem> postalAddresses = new ArrayList<>();
         private Birthday birthday;
-
+        private List<Item> urls = new ArrayList<>();
 
         public Contact(String contactId) {
             this.contactId = contactId;
@@ -444,6 +467,16 @@ public class ContactsProvider {
                 emailAddresses.pushMap(map);
             }
             contact.putArray("emailAddresses", emailAddresses);
+
+            WritableArray urlAddresses = Arguments.createArray();
+            for (Item item : urls) {
+                WritableMap map = Arguments.createMap();
+                map.putString("url", item.value);
+                map.putString("label", item.label);
+                map.putString("id", item.id);
+                urlAddresses.pushMap(map);
+            }
+            contact.putArray("urlAddresses", urlAddresses);
 
             WritableArray postalAddresses = Arguments.createArray();
             for (PostalAddressItem item : this.postalAddresses) {
@@ -524,13 +557,13 @@ public class ContactsProvider {
 
             static String getLabel(Cursor cursor) {
                 switch (cursor.getInt(cursor.getColumnIndex(StructuredPostal.TYPE))) {
-                    case StructuredPostal.TYPE_HOME:
-                        return "home";
-                    case StructuredPostal.TYPE_WORK:
-                        return "work";
-                    case StructuredPostal.TYPE_CUSTOM:
-                        final String label = cursor.getString(cursor.getColumnIndex(StructuredPostal.LABEL));
-                        return label != null ? label : "";
+                case StructuredPostal.TYPE_HOME:
+                    return "home";
+                case StructuredPostal.TYPE_WORK:
+                    return "work";
+                case StructuredPostal.TYPE_CUSTOM:
+                    final String label = cursor.getString(cursor.getColumnIndex(StructuredPostal.LABEL));
+                    return label != null ? label : "";
                 }
                 return "other";
             }
