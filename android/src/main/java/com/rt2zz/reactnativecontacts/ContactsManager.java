@@ -30,12 +30,10 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableArray;
-import com.facebook.react.bridge.Arguments;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -146,7 +144,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
      * Start open contact form
      */
     @ReactMethod
-    public void openContactForm(ReadableMap contact, Callback callback) {
+    public void openContactForm(ReadableMap contact, Callback callback) throws IOException {
 
         String givenName = contact.hasKey("givenName") ? contact.getString("givenName") : null;
         String middleName = contact.hasKey("middleName") ? contact.getString("middleName") : null;
@@ -157,6 +155,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
         String company = contact.hasKey("company") ? contact.getString("company") : null;
         String jobTitle = contact.hasKey("jobTitle") ? contact.getString("jobTitle") : null;
         String department = contact.hasKey("department") ? contact.getString("department") : null;
+        String thumbnailPath = contact.hasKey("thumbnailPath") ? contact.getString("thumbnailPath") : null;
 
         ReadableArray phoneNumbers = contact.hasKey("phoneNumbers") ? contact.getArray("phoneNumbers") : null;
         int numOfPhones = 0;
@@ -285,6 +284,18 @@ public class ContactsManager extends ReactContextBaseJavaModule {
             //No state column in StructuredPostal
             //structuredPostal.put(CommonDataKinds.StructuredPostal.???, postalAddressesState[i]);
             contactData.add(structuredPostal);
+        }
+
+        if(thumbnailPath != null && !thumbnailPath.isEmpty()) {
+            URL imageUrl = new URL(thumbnailPath);
+            Bitmap photo = BitmapFactory.decodeStream(imageUrl.openConnection().getInputStream());
+
+            if(photo != null) {
+                ContentValues thumbnail = new ContentValues();
+                thumbnail.put(ContactsContract.Data.MIMETYPE, CommonDataKinds.Photo.CONTENT_ITEM_TYPE);
+                thumbnail.put(CommonDataKinds.Photo.PHOTO, toByteArray(photo));
+                contactData.add(thumbnail);
+            }
         }
 
         Intent intent = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
@@ -618,7 +629,7 @@ public class ContactsManager extends ReactContextBaseJavaModule {
                         .withValue(CommonDataKinds.Website.URL, urls[i]);
             } else {
                 op = ContentProviderOperation.newUpdate(ContactsContract.Data.CONTENT_URI)
-                        .withSelection(ContactsContract.Data._ID + "=?", new String[]{String.valueOf(emailIds[i])})
+                        .withSelection(ContactsContract.Data._ID + "=?", new String[]{String.valueOf(urlIds[i])})
                         .withValue(CommonDataKinds.Website.LABEL, urlsLabels[i])
                         .withValue(CommonDataKinds.Website.URL, urls[i]);
             }
